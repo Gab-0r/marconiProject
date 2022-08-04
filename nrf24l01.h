@@ -24,7 +24,7 @@ para el SPI. Abstracción del hardware.
 #define ENAA_P3 3
 #define ENAA_P2 2
 #define ENAA_P1 1
-#define ENAA_P5 0
+#define ENAA_P0 0
 
 //REGISTRO EN_RXADDR - Direcciones del receptor
 #define EN_RXADDR 0x02

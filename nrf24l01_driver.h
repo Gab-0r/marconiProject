@@ -7,11 +7,13 @@ class nrf24l01_driver
 {
 private:
 public:
-
+    spi_inst_t *spi_;
+    uint8_t cs_;
     nrf24l01_driver(spi_inst_t *spi); //Constructor
     ~nrf24l01_driver(); //Destructor
 
     void writeReg(uint8_t addr, uint8_t data); //Escribir en un registro del modulo
-    void readReg(uint8_t adrr, uint8_t data); //Leer un registro del modulo
+    uint8_t readReg(uint8_t adrr, uint8_t data); //Leer un registro del modulo
     void spiConfig(spi_inst_t *spiPort, uint16_t *cs); //Función que inicializa el spi
+
 };
