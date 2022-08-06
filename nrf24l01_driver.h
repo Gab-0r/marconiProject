@@ -23,4 +23,5 @@ public:
     void goTo_rx();//Establecer el módulo en modo recepción
     void receive(char *data);//Recibir datos
     void setRX_addr(char *addr);//Dirección del RX
+    uint8_t dataInc();//Verificar si hay datos nuevos en la recepción
 };

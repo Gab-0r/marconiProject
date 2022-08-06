@@ -121,3 +121,9 @@ void nrf24l01_driver::setRX_addr(char *addr){
     spi_write_blocking(spi_, (uint8_t*)addr, 1);//Transmisión de SPI
     gpio_put(cs_, HIGH); //Acabar con la transmisión
 }
+
+uint8_t nrf24l01_driver::dataInc(){
+    uint8_t rxstatus = read_reg(FIFO_STATUS);
+    rxstatus = !(0x00000001 & rxstatus);
+    return rxstatus;
+}
