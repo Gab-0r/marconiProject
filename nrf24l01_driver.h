@@ -13,9 +13,9 @@ public:
     nrf24l01_driver(spi_inst_t *spi); //Constructor
     ~nrf24l01_driver(); //Destructor
 
+    void spi_config(spi_inst_t *spiPort, uint16_t *cs); //Función que inicializa el spi
     void write_reg(uint8_t addr, uint8_t data, uint8_t bytes_ = 1); //Escribir en un registro del modulo
     uint8_t read_reg(uint8_t adr, uint8_t bytes_ = 1); //Leer un registro del modulo
-    void spi_config(spi_inst_t *spiPort, uint16_t *cs); //Función que inicializa el spi
     void default_config(); //Configuración por defecto
     void goTo_tx();//Establecer el módulo en modo transmisión
     void send(char *data);//Enviar datos
