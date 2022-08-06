@@ -25,14 +25,9 @@ public: // Vars.
     void modeTX();
     void modeRX();
 
-    void sendMessage(char *msg);
-    void receiveMessage(char *msg);
+    void sendMessage(char *data);
+    void receiveMessage(char *data);
 
     uint8_t newMessage();
-
-    void setChannel(uint8_t ch);
-    void setRXName(char *name);
-    void setTXName(char *name);
-
 
 };
