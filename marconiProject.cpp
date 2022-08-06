@@ -5,7 +5,7 @@
 #include "nrf24l01_driver.h"
 
 #define SPI_PORT    spi0
-#define BUF_LEN 32
+#define BUF_LEN 7
 
 char buffer[BUF_LEN];
 
@@ -14,6 +14,7 @@ void printBuff(){
     {
         printf("%c", buffer[i]);
     }
+    printf("\n");
 }
 
 int main()
@@ -24,9 +25,8 @@ int main()
     
     printf("Configurando modulo...\n");
     NRF.config();
-    NRF.modeRX();
+    NRF.modeTX();
     sleep_ms(5000);
-    printf("Esperando datos....\n");
 
     while(1){
         /*
@@ -36,13 +36,12 @@ int main()
         printf("Valor de RF_CH es: %u\n", chanel);
         sleep_ms(1000);
         */
-       
-        if(NRF.newMessage()){
-            printf("Datos recibidos...\n");
-            NRF.receiveMessage(buffer);
-            printBuff();
-            sleep_ms(1000);
-        }
+        sprintf(buffer, "Hola...");
         
+        printf("Enviando datos...\n");
+        NRF.sendMessage(buffer);
+        printf("Se envió: \n");
+        printBuff();
+        sleep_ms(5000);
     }
 }
