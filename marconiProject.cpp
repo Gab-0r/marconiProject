@@ -25,8 +25,8 @@
 //     nrf24l01_driver NRF(SPI_PORT, 5, 6);
     
 //     printf("Configurando modulo...\n");
-//     NRF.config();
-//     NRF.modeTX();
+//     NRF.default_config();
+//     NRF.goTo_tx();
 //     sleep_ms(5000);
 
 //     while(1){
@@ -40,7 +40,7 @@
 //         sprintf(buffer, "Hola...");
         
 //         printf("Enviando datos...\n");
-//         NRF.sendMessage(buffer);
+//         NRF.send(buffer);
 //         printf("Se envió: \n");
 //         printBuff();
 //         sleep_ms(5000);
@@ -48,7 +48,6 @@
 // }
 
 //RECEPTOR
-
 char buffer[BUF_LEN];
 
 void printBuff(){
@@ -66,8 +65,8 @@ int main()
     nrf24l01_driver NRF(SPI_PORT, 5, 6);
     
     printf("Configurando modulo...\n");
-    NRF.config();
-    NRF.modeRX();
+    NRF.default_config();
+    NRF.goTo_rx();
     sleep_ms(5000);
     printf("Esperando datos....\n");
 
@@ -80,9 +79,9 @@ int main()
         sleep_ms(1000);
         */
        
-        if(NRF.newMessage()){
+        if(!(NRF.data_inc())){
             printf("Datos recibidos...\n");
-            NRF.receiveMessage(buffer);
+            NRF.receive(buffer);
             printBuff();
             sleep_ms(1000);
         }

@@ -5,29 +5,27 @@ class nrf24l01_driver
 {
 private:
 
-public: // Vars.
-    spi_inst_t *spi_;
-    uint16_t cs_;
-    uint16_t ce_;
+public:
+    spi_inst_t *spi_; //Dirección del puerto SPI
+    uint16_t cs_;//Chip select
+    uint16_t ce_;//Chip enable
 
-    nrf24l01_driver(spi_inst_t *port, uint16_t csn, uint16_t ce);
-    ~nrf24l01_driver();
+    nrf24l01_driver(spi_inst_t *port, uint16_t csn, uint16_t ce); //Constructor
+    ~nrf24l01_driver();//Destructor
 
-    uint8_t readReg(uint8_t reg);
+    void spiConfig();//Función que inicializa el SPI
+    void setPins();//Inicializar pins CS y CE
+    void write_reg( uint8_t reg, uint8_t data);//Escribir en registros del modulo
+    uint8_t read_reg(uint8_t reg);//Leer registros del módulo
+    void default_config();//Configuración del módulo
 
-    void writeReg( uint8_t reg, uint8_t data);
-    void writeReg( uint8_t reg, uint8_t *data, uint8_t size);
+    void goTo_tx();//Ir al estado TX
+    void send(char *data); //Enviar datos
 
-    void config();
+    void goTo_rx();//Ir al estado RX
+    void receive(char *data);//Recibir datos
+    uint8_t data_inc();//Verificar si hay datos en FIFO de recepción
 
-    void spiConfig();
-
-    void modeTX();
-    void modeRX();
-
-    void sendMessage(char *data);
-    void receiveMessage(char *data);
-
-    uint8_t newMessage();
+    void goTo_standbyI();//Ir a standby-I (Pendiente implementación)
 
 };
