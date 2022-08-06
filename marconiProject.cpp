@@ -5,7 +5,7 @@
 #include "nrf24l01_driver.h"
 
 #define SPI_PORT    spi0
-#define BUF_LEN 32
+#define BUF_LEN 7
 
 char buffer[BUF_LEN];
 
@@ -14,6 +14,7 @@ void printBuff(){
     {
         printf("%c", buffer[i]);
     }
+    printf("\n");
 }
 
 int main()
