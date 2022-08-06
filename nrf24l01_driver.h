@@ -1,27 +1,38 @@
-#include "nrf24l01.h"
-#include <stdio.h>
-#include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "hardware/gpio.h"
 
 class nrf24l01_driver
 {
 private:
-public:
+
+public: // Vars.
     spi_inst_t *spi_;
     uint16_t cs_;
     uint16_t ce_;
-    nrf24l01_driver(spi_inst_t *spiPort, uint16_t cs, uint16_t ce); //Constructor
-    ~nrf24l01_driver(); //Destructor
 
-    void spi_config(); //Función que inicializa el spi
-    void write_reg(uint8_t addr, uint8_t data); //Escribir en un registro del modulo
-    uint8_t read_reg(uint8_t adr); //Leer un registro del modulo
-    void default_config(); //Configuración por defecto
-    void goTo_tx();//Establecer el módulo en modo transmisión
-    void send(char *data);//Enviar datos
-    void setTX_addr(char *addr); //Dirección del TX
-    void goTo_rx();//Establecer el módulo en modo recepción
-    void receive(char *data);//Recibir datos
-    void setRX_addr(char *addr);//Dirección del RX
-    uint8_t dataInc();//Verificar si hay datos nuevos en la recepción
+    nrf24l01_driver(spi_inst_t *port, uint16_t csn, uint16_t ce);
+    ~nrf24l01_driver();
+
+    uint8_t readReg(uint8_t reg);
+
+    void writeReg( uint8_t reg, uint8_t data);
+    void writeReg( uint8_t reg, uint8_t *data, uint8_t size);
+
+    void config();
+
+    void spiConfig();
+
+    void modeTX();
+    void modeRX();
+
+    void sendMessage(char *msg);
+    void receiveMessage(char *msg);
+
+    uint8_t newMessage();
+
+    void setChannel(uint8_t ch);
+    void setRXName(char *name);
+    void setTXName(char *name);
+
+
 };

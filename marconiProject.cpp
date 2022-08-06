@@ -18,15 +18,31 @@ void printBuff(){
 
 int main()
 {
+    stdio_init_all();
+    sleep_ms(5000);
     nrf24l01_driver NRF(SPI_PORT, 5, 6);
-    NRF.default_config();
-    NRF.goTo_rx();
+    
+    printf("Configurando modulo...\n");
+    NRF.config();
+    NRF.modeRX();
+    sleep_ms(5000);
+    printf("Esperando datos....\n");
 
     while(1){
-        if(NRF.dataInc()){
+        /*
+        uint8_t status = NRF.readReg(0x00);
+        printf("Valor de CONFIG es: %u\n", status);
+        uint8_t chanel = NRF.readReg(0x05);
+        printf("Valor de RF_CH es: %u\n", chanel);
+        sleep_ms(1000);
+        */
+       
+        if(NRF.newMessage()){
             printf("Datos recibidos...\n");
-            NRF.receive(buffer);
+            NRF.receiveMessage(buffer);
             printBuff();
+            sleep_ms(1000);
         }
+        
     }
 }
