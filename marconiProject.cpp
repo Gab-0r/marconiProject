@@ -4,11 +4,8 @@
 #include "nrf24l01.h"
 #include "nrf24l01_driver.h"
 
+#define SPI_PORT spi0
+
 int main()
 {
-    stdio_init_all();
-
-    puts("Hello, world!");
-
-    return 0;
 }
