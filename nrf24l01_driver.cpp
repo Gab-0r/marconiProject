@@ -7,9 +7,11 @@
 #define LOW 0
 #define HIGH 1
 
-nrf24l01_driver::nrf24l01_driver(spi_inst_t *spiPort, uint8_t *cs){
+nrf24l01_driver::nrf24l01_driver(spi_inst_t *spiPort, uint16_t cs, uint16_t ce){
     spi_ = spi_port;
     cs_ = cs;
+    ce_ = ce;
+    gpio_init(ce)
     spiConfig();
 }
 
@@ -18,7 +20,7 @@ nrf24l01_driver::write_reg(uint8_t addr, uint8_t data, uint8_t bytes_ = 1){
     uint8_t payload[2] = [addr, data]; //Preparar datos para el SPI
     gpio_put(cs_, LOW); //Iniciar transmisión
     spi_write_blocking(spi_, *payload, 2);//Transmisión de SPI
-    gpio_put(cs, HIGH); //Acabar con la transmisión
+    gpio_put(cs_, HIGH); //Acabar con la transmisión
 }
 
 nrf24l01_driver::read_reg(uint8_t *addr, uint8_t bytes_ = 1){
@@ -39,14 +41,14 @@ nrf24l01_driver::spi_config(){
     gpio_set_function(3, GPIO_FUNC_SPI);
 
     //Inicializar CS
-    gpio_init(cs_pin);
-    gpio_setdir(cs_pin, GPIO_OUT);
-    gpio_put(cs_pin, HIGH);//CS en alto para no iniciar transmisión
+    gpio_init(cs_);
+    gpio_setdir(cs_, GPIO_OUT);
+    gpio_put(cs_, HIGH);//CS en alto para no iniciar transmisión
 }
 
-nrfl4l01::default_config(){
-    gpio_put(cs, HIGH); //Apagar el SPI, por precaución
-    gpio_put(ce, LOW); //Ir a standby 1
+nrfl4l01_driver::default_config(){
+    gpio_put(cs_, HIGH); //Apagar el SPI, por precaución
+    gpio_put(ce_, LOW); //Ir a standby 1
     sleep_ms(11);
 
     write_reg(CONFIG, 0x0A); //Configuración registro CONFIG
@@ -58,22 +60,48 @@ nrfl4l01::default_config(){
     write_reg(RX_PW_P0, 32); //Tamaño en bytes del payload en el pipe 0
 }
 
-nrf24l01::goTo_tx(){
+nrf24l01_driver::goTo_tx(){
     uint8_t valRead = read_reg(CONFIG);
     valRead = valRead & (0 << PRIM_RX);
     write_reg(CONFIG, valRead);
+    gpio_put(ce_, LOW);
     sleep_us(130);
 }
 
-nrf24l01::goTo_rx(){
+nrf24l01_driver::send(char *data){
+    gpio_put(cs_, LOW);
+    spi_write_blocking(spi_, W_TX_PAYLOAD);
+    spi_write_blocking(spi_, (uint8_t*)msg, 32);
+    gpio_put(cs_, HIGH);
+
+    gpio_put(ce_, HIGH);
+    sleep_us(10);
+    gpio_put(ce_, LOW);
+}
+
+nrf24l01_driver::setTX_addr(char *addr){
+    if(strlen(addr) !=5 )return;
+    uint8_t payload[2] = [W_REGISTER | (REGISTER_MASK & TX_ADDR), addr]; //Preparar datos para el SPI
+    gpio_put(cs_, LOW); //Iniciar transmisión
+    spi_write_blocking(spi_, *addr, 5);//Transmisión de SPI
+    gpio_put(cs_, HIGH); //Acabar con la transmisión
+}
+
+nrf24l01_driver::goTo_rx(){
     uint8_t valRead = read_reg(CONFIG);
     valRead = valRead & ();
 }
 
-nrf24l01::send(char *data){
-    uint8_t cmd = W_TX_PAYLOAD;
-    gpio_put(cs, LOW);
-    spi_write_blocking(spi_, cmd);\
-    spi_write_blocking(spi_, (uint8_t*)msg, 32);
+nrf24l01_driver::receive(char *data){
+    gpio_put(cs_, LOW);
+    spi_write_blocking(spi_, R_RX_PAYLOAD);
+    gpio_put(cs_, HIGH);
 }
 
+nrfl24l01_driver::setRX_addr(char *addr){
+    if(strlen(addr) !=5 )return;
+    uint8_t payload[2] = [W_REGISTER | (REGISTER_MASK & RX_ADDR_P0), addr]; //Preparar datos para el SPI
+    gpio_put(cs_, LOW); //Iniciar transmisión
+    spi_write_blocking(spi_, *addr, 5);//Transmisión de SPI
+    gpio_put(cs_, HIGH); //Acabar con la transmisión
+}

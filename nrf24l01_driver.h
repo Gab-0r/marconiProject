@@ -8,7 +8,8 @@ class nrf24l01_driver
 private:
 public:
     spi_inst_t *spi_;
-    uint8_t cs_;
+    uint16_t cs_;
+    uint16_t ce_;
     nrf24l01_driver(spi_inst_t *spi); //Constructor
     ~nrf24l01_driver(); //Destructor
 
@@ -17,6 +18,9 @@ public:
     void spi_config(spi_inst_t *spiPort, uint16_t *cs); //Función que inicializa el spi
     void default_config(); //Configuración por defecto
     void goTo_tx();//Establecer el módulo en modo transmisión
+    void send(char *data);//Enviar datos
+    void setTX_addr(char *addr); //Dirección del TX
     void goTo_rx();//Establecer el módulo en modo recepción
-    void send();//Enviar datos
+    void receive(char *data);//Recibir datos
+    void setRX_addr(char *addr);//Dirección del RX
 };
