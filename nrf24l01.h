@@ -100,7 +100,7 @@ para el SPI. Abstracción del hardware.
 #define FIFO_STATUS 0x17
 //CAMPOS REGISTRO FIFO_STATUS
 #define TX_REUSE 6
-#define TX_FULL 5
+#define FIFO_TX_FULL 5
 #define TX_EMPTY 4
 #define RX_FULL 1
 #define RX_EMPTY 0
@@ -127,7 +127,8 @@ para el SPI. Abstracción del hardware.
 #define W_REGISTER 0x20
 #define R_RX_PAYLOAD 0x61
 #define W_TX_PAYLOAD 0xA0
-#define FLUSH_TX 
+#define FLUSH_TX_SPI 0x71
+#define FLUSH_RX_SPI 0xE2
 
 
 //MASCARAS
