@@ -5,15 +5,21 @@
 #include "nrf24l01_driver.h"
 
 #define SPI_PORT    spi0
-#define BUF_LEN 7
+#define BUF_LEN 1
+
+#define ANGLE_MASK 0xFF
+#define SERVO_MASK 0x01
+#define MODE_MASK 0x02
+
 
 //EMISOR
 char buffer[BUF_LEN];
+uint8_t angulo = 0xf5;
 
 void printBuff(){
     for (uint8_t i = 0; i < BUF_LEN; i++)
     {
-        printf("%c", buffer[i]);
+        printf("%X", buffer[i]);
     }
     printf("\n");
 }
@@ -30,14 +36,11 @@ int main()
     sleep_ms(5000);
 
     while(1){
-        /*
-        uint8_t status = NRF.readReg(0x00);
-        printf("Valor de CONFIG es: %u\n", status);
-        uint8_t chanel = NRF.readReg(0x05);
-        printf("Valor de RF_CH es: %u\n", chanel);
-        sleep_ms(1000);
-        */
-        sprintf(buffer, "Hola...");
+        
+        //trama[0] = 180;
+        //trama[1] = 0;
+
+        sprintf(buffer, "%c", (char*)angulo);
         
         printf("Enviando datos...\n");
         NRF.send(buffer);
@@ -53,7 +56,7 @@ int main()
 // void printBuff(){
 //     for (uint8_t i = 0; i < BUF_LEN; i++)
 //     {
-//         printf("%c", buffer[i]);
+//         printf("%X", buffer[i]);
 //     }
 //     printf("\n");
 // }
@@ -71,20 +74,11 @@ int main()
 //     printf("Esperando datos....\n");
 
 //     while(1){
-//         /*
-//         uint8_t status = NRF.readReg(0x00);
-//         printf("Valor de CONFIG es: %u\n", status);
-//         uint8_t chanel = NRF.readReg(0x05);
-//         printf("Valor de RF_CH es: %u\n", chanel);
-//         sleep_ms(1000);
-//         */
-       
 //         if(!(NRF.data_inc())){
 //             printf("Datos recibidos...\n");
 //             NRF.receive(buffer);
 //             printBuff();
 //             sleep_ms(1000);
 //         }
-        
 //     }
 // }
