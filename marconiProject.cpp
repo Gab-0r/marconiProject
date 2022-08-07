@@ -14,28 +14,130 @@
 #define SERVO_MASK 0x01
 #define MODE_MASK 0x02
 
+// //EMISOR
+
+//Modo operación (automático, control remoto)
+// const int opModePin = 10;
+// bool opMode = true;
+
+// //Para controlar el servo2
+// bool rightButton = false;
+// bool leftButton = false;
+// const int rightPin = 12;
+// const int leftPin = 15;
+
+// //Para control de servo1
+// const int timonPin = 28;
+// uint16_t potenciometro;
+// float grados1;
+
+// //Factor de converion del adc
+// const float conversion_factor = 3.3f / (1 << 12);
+
+// char buffer[BUF_LEN];
+// uint8_t val2send = 0xf5;
+
+// void printBuff(){
+//     for (uint8_t i = 0; i < BUF_LEN; i++)
+//     {
+//         printf("%u", buffer[i]);
+//     }
+//     printf("\n");
+// }
+
+// void setPeripherals();
+// void readVelaDegree();
+
+// int main()
+// {
+//     stdio_init_all();//Inicializar input-output
+//     setPeripherals();//Inicializar perifericos
+//     sleep_ms(5000);
+//     nrf24l01_driver NRF(SPI_PORT, 5, 6);
+    
+//     printf("Configurando modulo...\n");
+//     NRF.default_config();
+//     NRF.goTo_tx();
+//     sleep_ms(5000);
+
+//     while(1){
+        
+//         readVelaDegree();
+//         val2send = grados1;
+//         sprintf(buffer, "%c", (char*)val2send);
+        
+//         NRF.send(buffer);
+//         printf("Se envió: \n");
+//         printBuff();
+//         sleep_ms(1000);
+//     }
+// }
+
+// void setPeripherals(){
+//     //SYS_INIT
+//     adc_init();
+//     stdio_init_all();
+
+//     //Modo de operación
+//     gpio_init(opModePin);
+//     gpio_set_dir(opModePin, GPIO_IN);
+    
+//     //Potenciometro
+//     adc_gpio_init(timonPin);
+//     adc_select_input(2);
+
+//     //Pulsadores
+//     gpio_init(rightPin);
+//     gpio_init(leftPin);
+//     gpio_set_dir(rightPin, GPIO_IN);
+//     gpio_set_dir(leftPin, GPIO_IN); 
+// }
+
+// void readVelaDegree(){
+//     potenciometro = adc_read();
+//     //printf("Raw value: 0x%03x, voltage: %f V\n", potenciometro, potenciometro * conversion_factor);
+//     grados1 = (potenciometro * conversion_factor) * (55);
+//     printf("Los grados medidos son: %f\n", grados1);
+// }
+
+
+//RECEPTOR
+char buffer[BUF_LEN];
+
+void setDegree(int servoPin, float degree); //Asignar angulo a servo
+void setServo(int servoPin, float startDegree); //Inicializar servo
+void setPeripherals(); //Inicialializar sistema y perofericos
+void setVela(); //Controlar vela
+void setTimon(); //Controlar timon
+
+//Variables Funciones del Servo
+const float clockDiv = 64;
+float wrap = 39062;
+const int degree = 0;
+
 //Modo operación (automático, control remoto)
 const int opModePin = 10;
 bool opMode = true;
 
-//Para controlar el servo2
-bool rightButton = false;
-bool leftButton = false;
-const int rightPin = 12;
-const int leftPin = 15;
+//LED Interno
+const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 
-//Para control de servo1
+//Servomotor 1
+const int servoPin1 = 0;
 const int timonPin = 28;
 uint16_t potenciometro;
 float grados1;
 
+//Servomotor 2
+const int servoPin2 = 1;
+const int rightPin = 12;
+const int leftPin = 15;
+float grados2 = 90;
+bool rightButton = false;
+bool leftButton = false;
+
 //Factor de converion del adc
 const float conversion_factor = 3.3f / (1 << 12);
-
-
-//EMISOR
-char buffer[BUF_LEN];
-uint8_t val2send = 0xf5;
 
 void printBuff(){
     for (uint8_t i = 0; i < BUF_LEN; i++)
@@ -45,34 +147,30 @@ void printBuff(){
     printf("\n");
 }
 
-void setPeripherals();
-void readVelaDegree();
-
 int main()
 {
-    stdio_init_all();//Inicializar input-output
-    setPeripherals();//Inicializar perifericos
+    setPeripherals();
     sleep_ms(5000);
     nrf24l01_driver NRF(SPI_PORT, 5, 6);
     
     printf("Configurando modulo...\n");
     NRF.default_config();
-    NRF.goTo_tx();
+    NRF.goTo_rx();
     sleep_ms(5000);
+    printf("Esperando datos....\n");
 
     while(1){
-        
-        readVelaDegree();
-        val2send = grados1;
-        sprintf(buffer, "%c", (char*)val2send);
-        
-        NRF.send(buffer);
-        printf("Se envió: \n");
-        printBuff();
-        sleep_ms(1000);
+        if(!(NRF.data_inc())){
+            //printf("Datos recibidos...\n");
+            NRF.receive(buffer);
+            //printBuff();
+            setDegree(servoPin1, buffer[0]);
+            //sleep_ms(1000);
+        }
     }
 }
 
+//INICIALIZAR
 void setPeripherals(){
     //SYS_INIT
     adc_init();
@@ -81,10 +179,16 @@ void setPeripherals(){
     //Modo de operación
     gpio_init(opModePin);
     gpio_set_dir(opModePin, GPIO_IN);
+
+    //LED Interno
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
     
     //Potenciometro
     adc_gpio_init(timonPin);
     adc_select_input(2);
+    setServo(servoPin1, degree);
+    setServo(servoPin2, degree);
 
     //Pulsadores
     gpio_init(rightPin);
@@ -93,43 +197,59 @@ void setPeripherals(){
     gpio_set_dir(leftPin, GPIO_IN); 
 }
 
-void readVelaDegree(){
+//CONTROLAR MOTORES
+void setVela(){
     potenciometro = adc_read();
-    //printf("Raw value: 0x%03x, voltage: %f V\n", potenciometro, potenciometro * conversion_factor);
+    // printf("Raw value: 0x%03x, voltage: %f V\n", potenciometro, potenciometro * conversion_factor);
     grados1 = (potenciometro * conversion_factor) * (55);
-    printf("Los grados medidos son: %f\n", grados1);
+    // printf("Grados: %f °\n", grados1);
+    setDegree(servoPin1, grados1);
+}
+void setTimon(){
+    rightButton = gpio_get(rightPin);
+    leftButton = gpio_get(leftPin);
+    if(rightButton & (grados2<=175)){
+        // printf("Derecha \n");
+        grados2 += 5;
+    }
+    else if(leftButton & (grados2>=5)){
+        // printf("Izquierda \n");
+        grados2 -= 5;
+    }
+    else if(grados2>=95){
+        grados2 -= 5;
+    }
+    else if(grados2<=85){
+        grados2 += 5;
+    }
+    setDegree(servoPin2, grados2);
 }
 
+//FUNCIONES DEL SERVO
+void setDegree(int servoPin, float degree)
+{
+    float millis;
+    millis = ((100/9)*degree) + 400;
+    pwm_set_gpio_level(servoPin, (millis/20000.f)*wrap);
+}
 
-//RECEPTOR
-// char buffer[BUF_LEN];
+void setServo(int servoPin, float startDegree)
+{
+    gpio_set_function(servoPin, GPIO_FUNC_PWM);
 
-// void printBuff(){
-//     for (uint8_t i = 0; i < BUF_LEN; i++)
-//     {
-//         printf("%X", buffer[i]);
-//     }
-//     printf("\n");
-// }
+    uint slice_num = pwm_gpio_to_slice_num(servoPin);
 
-// int main()
-// {
-//     stdio_init_all();
-//     sleep_ms(5000);
-//     nrf24l01_driver NRF(SPI_PORT, 5, 6);
+    pwm_config config = pwm_get_default_config();
     
-//     printf("Configurando modulo...\n");
-//     NRF.default_config();
-//     NRF.goTo_rx();
-//     sleep_ms(5000);
-//     printf("Esperando datos....\n");
+    uint64_t clockspeed = clock_get_hz(clk_sys); //Get the current frequency of the specified clock
 
-//     while(1){
-//         if(!(NRF.data_inc())){
-//             printf("Datos recibidos...\n");
-//             NRF.receive(buffer);
-//             printBuff();
-//             sleep_ms(1000);
-//         }
-//     }
-// }
+    wrap = clockspeed/clockDiv/50;
+
+    pwm_config_set_clkdiv(&config, clockDiv);
+    pwm_config_set_wrap(&config, wrap);
+    pwm_init(slice_num, &config, true);
+
+    float startMillis;
+    startMillis = ((100/9)*startDegree) + 400;
+    setDegree(servoPin, startMillis);
+}
