@@ -14,8 +14,7 @@
 #define SERVO_MASK 0x01
 #define MODE_MASK 0x02
 
-// //EMISOR
-
+//EMISOR
 //Modo operación (automático, control remoto)
 // const int opModePin = 10;
 // bool opMode = true;
@@ -25,6 +24,7 @@
 // bool leftButton = false;
 // const int rightPin = 12;
 // const int leftPin = 15;
+// float grados2 = 90;
 
 // //Para control de servo1
 // const int timonPin = 28;
@@ -35,8 +35,8 @@
 // const float conversion_factor = 3.3f / (1 << 12);
 
 // char buffer[BUF_LEN];
-// uint8_t val2send = 0xf5;
-
+// uint8_t val2send = 0x0000;
+// uint8_t servo2ctrl = 254;
 // void printBuff(){
 //     for (uint8_t i = 0; i < BUF_LEN; i++)
 //     {
@@ -62,11 +62,31 @@
 
 //     while(1){
         
+//         // //Enviar modo 
+//         // if(gpio_get(opModePin)){
+//         //     printf("Enviando modo manual\n");
+//         //     val2send = 254;
+//         //     sprintf(buffer, "%c", val2send);
+//         //     NRF.send(buffer);
+//         //     sleep_ms(5);
+
+//         // }
+//         // else{
+//         //     printf("Enviando modo automatico\n");
+//         //     val2send = 255;
+//         //     sprintf(buffer, "%c", val2send);
+//         //     NRF.send(buffer);
+//         //     sleep_ms(5);
+//         // }
+
+//         //Enviar datos servo 1
 //         readVelaDegree();
-//         val2send = grados1;
+//         val2send = grados1/5 + 50; //offset de servo 1 50+grados
 //         sprintf(buffer, "%c", (char*)val2send);
-        
 //         NRF.send(buffer);
+//         //printf("Enviado angulo %u a servo1 \n", val2send);
+//         //sleep_ms(5);
+//         //sleep_ms(3000);
 //         printf("Se envió: \n");
 //         printBuff();
 //         sleep_ms(1000);
@@ -97,7 +117,26 @@
 //     potenciometro = adc_read();
 //     //printf("Raw value: 0x%03x, voltage: %f V\n", potenciometro, potenciometro * conversion_factor);
 //     grados1 = (potenciometro * conversion_factor) * (55);
-//     printf("Los grados medidos son: %f\n", grados1);
+//     //printf("Los grados medidos son: %f\n", grados1);
+// }
+
+// void setTimon(){
+//     rightButton = gpio_get(rightPin);
+//     leftButton = gpio_get(leftPin);
+//     if(rightButton & (grados2<=175)){
+//         // printf("Derecha \n");
+//         grados2 += 5;
+//     }
+//     else if(leftButton & (grados2>=5)){
+//         // printf("Izquierda \n");
+//         grados2 -= 5;
+//     }
+//     else if(grados2>=95){
+//         grados2 -= 5;
+//     }
+//     else if(grados2<=85){
+//         grados2 += 5;
+//     }
 // }
 
 
@@ -136,6 +175,12 @@ float grados2 = 90;
 bool rightButton = false;
 bool leftButton = false;
 
+uint8_t valReceive = 0;
+
+
+//Modos de funcionamiento
+bool automaticMode = false; //Iniciar en modo manual
+
 //Factor de converion del adc
 const float conversion_factor = 3.3f / (1 << 12);
 
@@ -164,7 +209,30 @@ int main()
             //printf("Datos recibidos...\n");
             NRF.receive(buffer);
             //printBuff();
-            setDegree(servoPin1, buffer[0]);
+            printf("datos recibidos\n");
+            printBuff();
+            if(buffer[0] == 255){//Cambiar entre modo automatico
+                printf("Control automatico establecido \n");
+                gpio_put(PICO_DEFAULT_LED_PIN, 1);
+            }
+            else if(buffer[0] == 254){//Cambiar a modo manual
+                printf("Control manual establecido \n");
+                gpio_put(PICO_DEFAULT_LED_PIN, 0);
+            }
+            if ( 101 < buffer[0] < 50) //Mover servo1
+            {
+                uint8_t angle__ = (buffer[0] -50) *5;
+                printf("Moviendo servo1 %u °\n", angle__);
+                setServo(servoPin1, angle__); 
+            }
+            // else if (buffer[0] == 252)
+            // {
+            // }
+
+            sleep_ms(50);
+
+            //printBuff();
+            //setDegree(servoPin1, buffer[0]);
             //sleep_ms(1000);
         }
     }
