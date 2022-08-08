@@ -195,37 +195,48 @@ void printBuff(){
 int main()
 {
     setPeripherals();
-    sleep_ms(5000);
+    sleep_ms(1000);
     nrf24l01_driver NRF(SPI_PORT, 5, 6);
     
     printf("Configurando modulo...\n");
     NRF.default_config();
     NRF.goTo_rx();
-    sleep_ms(5000);
+    sleep_ms(4000);
     printf("Esperando datos....\n");
 
     while(1){
 
         if(!(NRF.data_inc())){
-            //printf("Datos recibidos...\n");
             NRF.receive(buffer); //Recibir datos
-            //printf("datos recibidos\n");
-            printBuff();//Imprimir lo que se recibe
             valReceive = buffer[0]; //Pasar char a uint8_t por si las moscas (No funcionó)
-            printf("Moviendo servo1 %u \n", valReceive); //Verificar el angulo en que se mueve el servo
-            // setServo(servoPin1, valReceive); //Mover el servo en el angulo que llega
-            setDegree(servoPin1, valReceive);
-            sleep_ms(50);
-            // if(buffer[0] == 255){//Cambiar entre modo automatico
-            //     printf("Control automatico establecido \n");
-            //     gpio_put(PICO_DEFAULT_LED_PIN, 1);
-            // }
-            // else if(buffer[0] == 254){//Cambiar a modo manual
-            //     printf("Control manual establecido \n");
-            //     gpio_put(PICO_DEFAULT_LED_PIN, 0);
-            // }
-            
-
+            if(valReceive == 255){//Cambiar entre modo automatico
+                printf("Control automatico establecido \n");
+                gpio_put(PICO_DEFAULT_LED_PIN, 1);
+            }
+            else if(valReceive == 254){//Cambiar a modo manual
+                printf("Control manual establecido \n");
+                gpio_put(PICO_DEFAULT_LED_PIN, 0);
+            }
+            if((valReceive == 253) & (grados2<=175)){
+                printf("Derecha \n");
+                grados2 += 5;
+            }
+            else if((valReceive == 252) & (grados2>=5)){
+                printf("Izquierda \n");
+                grados2 -= 5;
+            }
+            else if(grados2>=95){
+                grados2 -= 5;
+            }
+            else if(grados2<=85){
+                grados2 += 5;
+            }     
+            else if(valReceive <= 180){
+                printf("Moviendo vela a %u \n", valReceive);
+                setDegree(servoPin1, valReceive);
+            }
+            setDegree(servoPin2, grados2);
+            sleep_ms(30);
             //printBuff();
             //setDegree(servoPin1, buffer[0]);
             //sleep_ms(1000);
