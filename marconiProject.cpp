@@ -81,7 +81,8 @@
 
 //         //Enviar datos servo 1
 //         readVelaDegree();
-//         val2send = grados1/5 + 50; //offset de servo 1 50+grados
+//         //val2send = grados1/5 + 50; //offset de servo 1 50+grados
+//         val2send = grados1;
 //         sprintf(buffer, "%c", (char*)val2send);
 //         NRF.send(buffer);
 //         //printf("Enviado angulo %u a servo1 \n", val2send);
@@ -145,7 +146,7 @@ char buffer[BUF_LEN];
 
 void setDegree(int servoPin, float degree); //Asignar angulo a servo
 void setServo(int servoPin, float startDegree); //Inicializar servo
-void setPeripherals(); //Inicialializar sistema y perofericos
+void setPeripherals(); //Inicialializar sistema y perifericos
 void setVela(); //Controlar vela
 void setTimon(); //Controlar timon
 
@@ -177,7 +178,6 @@ bool leftButton = false;
 
 uint8_t valReceive = 0;
 
-
 //Modos de funcionamiento
 bool automaticMode = false; //Iniciar en modo manual
 
@@ -205,31 +205,26 @@ int main()
     printf("Esperando datos....\n");
 
     while(1){
+
         if(!(NRF.data_inc())){
             //printf("Datos recibidos...\n");
-            NRF.receive(buffer);
-            //printBuff();
-            printf("datos recibidos\n");
-            printBuff();
-            if(buffer[0] == 255){//Cambiar entre modo automatico
-                printf("Control automatico establecido \n");
-                gpio_put(PICO_DEFAULT_LED_PIN, 1);
-            }
-            else if(buffer[0] == 254){//Cambiar a modo manual
-                printf("Control manual establecido \n");
-                gpio_put(PICO_DEFAULT_LED_PIN, 0);
-            }
-            if ( 101 < buffer[0] < 50) //Mover servo1
-            {
-                uint8_t angle__ = (buffer[0] -50) *5;
-                printf("Moviendo servo1 %u °\n", angle__);
-                setServo(servoPin1, angle__); 
-            }
-            // else if (buffer[0] == 252)
-            // {
+            NRF.receive(buffer); //Recibir datos
+            //printf("datos recibidos\n");
+            printBuff();//Imprimir lo que se recibe
+            valReceive = buffer[0]; //Pasar char a uint8_t por si las moscas (No funcionó)
+            printf("Moviendo servo1 %u \n", valReceive); //Verificar el angulo en que se mueve el servo
+            // setServo(servoPin1, valReceive); //Mover el servo en el angulo que llega
+            setDegree(servoPin1, valReceive);
+            sleep_ms(1000);
+            // if(buffer[0] == 255){//Cambiar entre modo automatico
+            //     printf("Control automatico establecido \n");
+            //     gpio_put(PICO_DEFAULT_LED_PIN, 1);
             // }
-
-            sleep_ms(50);
+            // else if(buffer[0] == 254){//Cambiar a modo manual
+            //     printf("Control manual establecido \n");
+            //     gpio_put(PICO_DEFAULT_LED_PIN, 0);
+            // }
+            
 
             //printBuff();
             //setDegree(servoPin1, buffer[0]);
@@ -237,6 +232,7 @@ int main()
         }
     }
 }
+
 
 //INICIALIZAR
 void setPeripherals(){
