@@ -62,35 +62,45 @@ int main()
 
     while(1){
         
-        // //Enviar modo 
-        // if(gpio_get(opModePin)){
-        //     printf("Enviando modo manual\n");
-        //     val2send = 254;
-        //     sprintf(buffer, "%c", val2send);
-        //     NRF.send(buffer);
-        //     sleep_ms(5);
+        //Enviar modo 
+        if(gpio_get(opModePin)){
+            printf("Enviando modo manual\n");
+            val2send = 254;
+            sprintf(buffer, "%c", val2send);
+            NRF.send(buffer);
+            sleep_ms(5);
 
-        // }
-        // else{
-        //     printf("Enviando modo automatico\n");
-        //     val2send = 255;
-        //     sprintf(buffer, "%c", val2send);
-        //     NRF.send(buffer);
-        //     sleep_ms(5);
-        // }
+            while(gpio_get(rightPin)){
+                val2send = 253;
+                sprintf(buffer, "%c", val2send);
+                NRF.send(buffer);
+                printf("Enviando derecha\n");
+                sleep_ms(5);
+            }
 
-        //Enviar datos servo 1
-        readVelaDegree();
-        //val2send = grados1/5 + 50; //offset de servo 1 50+grados
-        val2send = grados1;
-        sprintf(buffer, "%c", (char*)val2send);
-        NRF.send(buffer);
-        //printf("Enviado angulo %u a servo1 \n", val2send);
-        //sleep_ms(5);
-        //sleep_ms(3000);
-        printf("Se envió: \n");
-        printBuff();
-        sleep_ms(50);
+            while(gpio_get(leftPin)){
+                val2send = 252;
+                sprintf(buffer, "%c", val2send);
+                NRF.send(buffer);
+                printf("Enviando izquierda\n");
+                sleep_ms(5);
+            }
+            
+            readVelaDegree();
+            val2send = grados1;
+            sprintf(buffer, "%c", val2send);
+            NRF.send(buffer);
+            printf("Se envió: \n");
+            printBuff();
+            sleep_ms(50);
+        }
+        else{
+            printf("Enviando modo automatico\n");
+            val2send = 255;
+            sprintf(buffer, "%c", val2send);
+            NRF.send(buffer);
+            sleep_ms(5);
+        }
     }
 }
 
